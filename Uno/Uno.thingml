@@ -1,0 +1,201 @@
+import "../lib/_Arduino.thingml"
+import "../lib/Msgs.thingml"
+
+configuration UnoCfg {
+	instance arduino : ArduinoScheduler
+	instance motors : MotorsController
+	instance test : TestController
+	
+	connector motors.arduino => arduino.arduino
+	connector test.arduino => arduino.arduino
+	connector motors.ControlMe => test.ControlMe
+}
+
+thing TestController includes Msgs, ArduinoApplication {
+
+	property time : Integer = 2000
+
+	provided port ControlMe {
+		sends Forward, Left, Right, Backward, Stop
+		receives MotorsReady
+	}
+	
+	statechart TestChart init Init {
+		state Init {
+			transition -> Forward event ControlMe?MotorsReady
+		}
+		
+		state Forward {
+			on entry do
+				arduino!serial_print_str("[TestController] Forward\n]")
+				ControlMe!Forward()
+				arduino!timer_start(0, time)
+			end
+			
+			transition -> Left event arduino?timeout
+		}
+		
+		state Left {
+			on entry do
+				arduino!serial_print_str("[TestController] Left\n]")
+				ControlMe!Left()
+				arduino!timer_start(0, time)
+			end
+			
+			transition -> Right event arduino?timeout
+		}
+		
+		state Right {
+			on entry do
+				arduino!serial_print_str("[TestController] Right\n]")
+				ControlMe!Right()
+				arduino!timer_start(0, time)
+			end
+			
+			transition -> Backward event arduino?timeout
+		}
+		
+		state Backward {
+			on entry do
+				arduino!serial_print_str("[TestController] Backward\n]")
+				ControlMe!Backward()
+				arduino!timer_start(0, time)
+			end
+			
+			transition -> Stop event arduino?timeout
+		}
+		
+		state Stop {
+			on entry do
+				arduino!serial_print_str("[TestController] Stop\n]")
+				ControlMe!Stop()
+				arduino!timer_start(0, time)
+			end
+			
+		}
+	}
+}
+
+
+thing MotorsController includes Msgs, ArduinoApplication {
+	property EnableA : UInt8 = 7 // Left Motor
+	property InputA1 : UInt8 = 9
+	property InputA2 : UInt8 = 8
+	
+	property EnableB : UInt8 = 10
+	property InputB1 : UInt8 = 12
+	property InputB2 : UInt8 = 11
+
+
+	required port ControlMe {
+		receives Forward, Left, Right, Backward, Stop
+		sends MotorsReady
+	}
+
+	statechart MotorsControllerChart init Init {
+		state Init {
+			transition -> Stop event arduino?ready action do
+				arduino!serial_print_str("[MotorController] Ready\n]")
+				arduino!setOutput(EnableA)
+				arduino!setOutput(InputA1)
+				arduino!setOutput(InputA2)
+				
+				arduino!setOutput(EnableB)
+				arduino!setOutput(InputB1)
+				arduino!setOutput(InputB2)
+				
+				ControlMe!MotorsReady()
+			end
+		}
+		
+		state Stop {
+			on entry do
+				arduino!serial_print_str("[MotorController] Stop\n]")
+				arduino!setDigitalLow(EnableA)
+				arduino!setDigitalLow(EnableB)
+			end
+			
+			transition -> Forward event ControlMe?Forward
+			transition -> Left event ControlMe?Left
+			transition -> Right event ControlMe?Right
+			transition -> Backward event ControlMe?Backward
+			transition -> Stop event ControlMe?Stop
+		}
+		
+		state Forward {
+			on entry do
+				arduino!serial_print_str("[MotorController] Forward\n]")
+				arduino!setDigitalHigh(EnableA)
+				arduino!setDigitalLow(InputA1)
+				arduino!setDigitalHigh(InputA2)
+				
+				arduino!setDigitalHigh(EnableB)
+				arduino!setDigitalLow(InputB1)
+				arduino!setDigitalHigh(InputB2)
+			end
+			
+			transition -> Forward event ControlMe?Forward
+			transition -> Left event ControlMe?Left
+			transition -> Right event ControlMe?Right
+			transition -> Backward event ControlMe?Backward
+			transition -> Stop event ControlMe?Stop
+			}
+		
+		state Left {
+			on entry do
+				arduino!serial_print_str("[MotorController] Left\n]")
+				arduino!setDigitalHigh(EnableA)
+				arduino!setDigitalHigh(InputA1)
+				arduino!setDigitalLow(InputA2)
+				
+				arduino!setDigitalHigh(EnableB)
+				arduino!setDigitalLow(InputB1)
+				arduino!setDigitalHigh(InputB2)
+			end
+			
+			transition -> Forward event ControlMe?Forward
+			transition -> Left event ControlMe?Left
+			transition -> Right event ControlMe?Right
+			transition -> Backward event ControlMe?Backward
+			transition -> Stop event ControlMe?Stop
+			}
+		
+		state Right {
+			on entry do
+				arduino!serial_print_str("[MotorController] Right\n]")
+				arduino!setDigitalHigh(EnableA)
+				arduino!setDigitalLow(InputA1)
+				arduino!setDigitalHigh(InputA2)
+				
+				arduino!setDigitalHigh(EnableB)
+				arduino!setDigitalHigh(InputB1)
+				arduino!setDigitalLow(InputB2)
+			end
+			
+			transition -> Forward event ControlMe?Forward
+			transition -> Left event ControlMe?Left
+			transition -> Right event ControlMe?Right
+			transition -> Backward event ControlMe?Backward
+			transition -> Stop event ControlMe?Stop
+			}
+		
+		state Backward {
+			on entry do
+				arduino!serial_print_str("[MotorController] Backward\n]")
+				arduino!setDigitalHigh(EnableA)
+				arduino!setDigitalHigh(InputA1)
+				arduino!setDigitalLow(InputA2)
+				
+				arduino!setDigitalHigh(EnableB)
+				arduino!setDigitalHigh(InputB1)
+				arduino!setDigitalLow(InputB2)
+			end
+			
+			transition -> Forward event ControlMe?Forward
+			transition -> Left event ControlMe?Left
+			transition -> Right event ControlMe?Right
+			transition -> Backward event ControlMe?Backward
+			transition -> Stop event ControlMe?Stop
+			}
+	}
+}
