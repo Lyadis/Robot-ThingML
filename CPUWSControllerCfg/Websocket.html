@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset=utf-8 http-equiv="Content-Language" content="en"/>
+		<title>Mock-up for debugging CPUWSControllerCfg :: Websocket</title>
+		<link rel="stylesheet" type="text/css" href="Websocket.css">
+	</head>
+
+	<body>
+		<section class="main">
+		<div id="header">
+			<div id="header-inside">
+				<h1>Mock-up for debugging CPUWSControllerCfg :: Websocket</h1>
+			</div>
+		</div>
+		<div id="logs">
+			<div id="div-received-logs">
+				<h2>Messages received</h2>
+				<div id="received-logs" class="log"></div>
+			</div>
+			<div id="div-sent-logs">
+				<h2>Messages sent</h2>
+				<div id="sent-logs" class="log"></div>
+			</div>
+		</div>
+
+		<div id="send">
+			<div id="send-content">
+				<table>
+				<tr>
+<td></td>
+</tr>
+<tr>
+<td><input type="submit" class="btn" value="Forward" onClick="Websocket_send(10);" /></td>
+</tr>
+<tr>
+<td></td>
+</tr>
+<tr>
+<td><input type="submit" class="btn" value="Left" onClick="Websocket_send(11);" /></td>
+</tr>
+<tr>
+<td></td>
+</tr>
+<tr>
+<td><input type="submit" class="btn" value="Right" onClick="Websocket_send(12);" /></td>
+</tr>
+<tr>
+<td></td>
+</tr>
+<tr>
+<td><input type="submit" class="btn" value="Backward" onClick="Websocket_send(13);" /></td>
+</tr>
+<tr>
+<td></td>
+</tr>
+<tr>
+<td><input type="submit" class="btn" value="Stop" onClick="Websocket_send(14);" /></td>
+</tr>
+
+				</table>
+			</div>
+		</div>
+		</section>
+
+		<div id="connect">
+			<div id="connect-content">
+				<table><tr>
+                   <td></td>
+                   <td>Address</td>
+                   <td>Port</td>
+                   <td>Protocol</td>
+                   <td>Status</td>
+		</tr>		<tr>
+                   <td><input class="btn" type="submit" onClick="Websocket_connect();" value="Connect"/></td>
+                   <td><input id="address" type="text" /></td>
+                   <td ><input id="port" type="text" /></td>
+                   <td><input id="protocol" type="text" value="ThingML-protocol" /></td>
+                   <td id=status>.</td>
+		</tr></table>
+			</div>
+		</div>
+
+		<div id="footer">
+		</div>
+
+	<script>
+		function intToXdigitString(i, digit) {
+	if ((i >= 0) && (digit > 0)) {
+		var buf = "" + i;
+		while (buf.length < digit) {
+			buf = "0" + buf;
+		}
+		return buf;
+	} else {
+		var buf = "";
+		while (buf.length < digit) {
+			buf = "0" + buf;
+		}
+		return buf;
+	}
+//return i;
+}
+
+function intToBytes(i, nbB) {
+	var n = nbB;
+	var tmp = i;
+	var res = "";
+	while(n > 1){
+		res += intToXdigitString(Math.floor(tmp / Math.pow(256, n)), 3);
+		tmp = i - res;
+		n--;
+	}
+	res += intToXdigitString(i % 256, 3);
+	return res;
+}
+
+function readByte(i, nbB) {
+	var n = nbB;
+	var res = 0;
+	var tmp = "";
+	while(n > 0) {
+		tmp = i.substring((nbB-n)*3, (nbB-n+1)*3);
+		res += Number(tmp) * Math.pow(256, (n-1));
+		n--;
+	}
+	return res;
+}
+
+	var Websocket_socket;
+
+function Websocket_send(msgID) {
+var tosend, tmp_param, tolog;
+
+tosend = intToBytes(msgID, 2);
+if(msgID == 10) {
+tolog = "Forward("
+}
+if(msgID == 11) {
+tolog = "Left("
+}
+if(msgID == 12) {
+tolog = "Right("
+}
+if(msgID == 13) {
+tolog = "Backward("
+}
+if(msgID == 14) {
+tolog = "Stop("
+}
+tolog += ")"
+document.getElementById("sent-logs").textContent += "\n> " + tolog;
+Websocket_socket.send(tosend);
+document.getElementById("sent-logs").scrollBottom;
+}
+
+function Websocket_parse(msg) {
+var parsedMsg = "";
+var msgID = readByte(msg.substring(0, 6), 2);
+if(msgID == 15) {
+parsedMsg = "MotorsReady(";
+parsedMsg += ")";
+}
+else if(msgID == 16) {
+parsedMsg = "GoingForward(";
+parsedMsg += ")";
+}
+else if(msgID == 17) {
+parsedMsg = "RotatingLeft(";
+parsedMsg += ")";
+}
+else if(msgID == 18) {
+parsedMsg = "GoingBackward(";
+parsedMsg += ")";
+}
+else if(msgID == 19) {
+parsedMsg = "RotatingRight(";
+parsedMsg += ")";
+}
+else if(msgID == 20) {
+parsedMsg = "Stopped(";
+parsedMsg += ")";
+}
+else {
+parsedMsg += "Unknown message: " + msg;
+}
+document.getElementById("received-logs").textContent +=  "\n> " + parsedMsg;
+document.getElementById("received-logs").scrollBottom;
+}
+
+/* debugg protocol */
+function Websocket_connect() {
+	var protocol = document.getElementById("protocol").value;
+	var addr = document.getElementById("address").value;
+	var port = document.getElementById("port").value;
+
+	
+	if (typeof MozWebSocket != "undefined") {
+		Websocket_socket = new MozWebSocket("ws://" + addr + ":" + port + "/xxx",
+				   protocol);
+	} else {
+		Websocket_socket = new WebSocket("ws://" + addr + ":" + port + "/xxx",
+				   protocol);
+	}
+
+	try {
+		Websocket_socket.onopen = function() {
+			document.getElementById("status").style.backgroundColor = "#40ff40";
+			document.getElementById("status").textContent = " OPENED ";
+		} 
+
+		Websocket_socket.onmessage =function got_packet(msg) {
+			Websocket_parse(msg.data);
+		} 
+
+		Websocket_socket.onclose = function(){
+			document.getElementById("status").style.backgroundColor = "#ff4040";
+			document.getElementById("status").textContent = " CLOSED ";
+		}
+	} catch(exception) {
+		alert('<p>Error' + exception);  
+	}
+}
+	</script>
+	</body>
+
+</html>

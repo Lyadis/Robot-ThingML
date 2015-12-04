@@ -1,0 +1,8 @@
+thing fragment Msgs {
+	message Forward();
+	message Left();
+	message Right();
+	message Backward();
+	message Stop();
+	message MotorsReady();
+}

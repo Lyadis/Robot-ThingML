@@ -57,7 +57,7 @@ enumeration DigitalState
   LOW @enum_val "0"
   HIGH @enum_val "1"
 }
-/	
+	
 thing fragment ThingMLSchedulerMsg {
 	message setup();
 	message poll();
@@ -68,4 +68,4 @@ thing ThingMLScheduler includes ThingMLSchedulerMsg
 	provided port Polling {
 		sends poll, setup
 	}
-}*/
+}
