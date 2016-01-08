@@ -1,9 +1,9 @@
 #Robot - ThingML
 
-The goal of this project was to use ThingML to generate software for a small remote control robot.
+The goal of this project was to use ThingML to generate software for a small remote controlled robot.
 
-<img src="https://raw.githubusercontent.com/Lyadis/Robot-ThingML/master/img/remoteController.JPG" alt="Remote control with smartphone" >
 <img src="https://raw.githubusercontent.com/Lyadis/Robot-ThingML/master/img/robot.JPG" alt="Robot" >
+<img src="https://raw.githubusercontent.com/Lyadis/Robot-ThingML/master/img/remoteController.JPG" alt="Remote control with smartphone" >
 <img src="https://raw.githubusercontent.com/Lyadis/Robot-ThingML/master/img/Mockup.png" alt="Mockup for remote control" >
 
 ##Hardware
