@@ -9,7 +9,7 @@ The goal of this project was to use ThingML to generate software for a small rem
 ##Hardware
 
 * Arduino Yùn Board (This board contains both a micro processor MIPS (Atheros AR9331) refered from here as CPU, and a micro controller avr 8 bits (ATmega32u4) from refered as MCU.
-* Two wheels robot. (The wheels are driven by two DC motors)
+* Two wheels robot. (The wheels are driven by two DC motors with two H bridges)
 * Battery
 
 ##Configuration
